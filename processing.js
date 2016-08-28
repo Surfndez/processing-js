@@ -1,7 +1,31 @@
 (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
+// build script for generating processing.js
+
+var Browser = {
+  isDomPresent: true,
+  navigator: navigator,
+  window: window,
+  document: document,
+  ajax: function(url) {
+    var xhr = new XMLHttpRequest();
+    xhr.open("GET", url, false);
+    if (xhr.overrideMimeType) {
+      xhr.overrideMimeType("text/plain");
+    }
+    xhr.setRequestHeader("If-Modified-Since", "Fri, 01 Jan 1960 00:00:00 GMT");
+    xhr.send(null);
+    // failed request?
+    if (xhr.status !== 200 && xhr.status !== 0) { throw ("XMLHttpRequest failed, status code " + xhr.status); }
+    return xhr.responseText;
+  }
+};
+
+window.Processing = require('./src/')(Browser);
+
+},{"./src/":28}],2:[function(require,module,exports){
 module.exports={
   "name": "processing-js",
-  "version": "1.5.2",
+  "version": "1.6.0",
   "author": "Processing.js",
   "repository": {
     "type": "git",
@@ -27,11 +51,12 @@ module.exports={
   },
   "license": "MIT",
   "dependencies": {
-    "minifier": "^0.7.1"
+    "minifier": "^0.7.1",
+    "minify": "^2.0.11"
   }
 }
 
-},{}],2:[function(require,module,exports){
+},{}],3:[function(require,module,exports){
 /**
 * A ObjectIterator is an iterator wrapper for objects. If passed object contains
 * the iterator method, the object instance will be replaced by the result returned by
@@ -57,7 +82,7 @@ module.exports = function ObjectIterator(obj) {
   }
 };
 
-},{}],3:[function(require,module,exports){
+},{}],4:[function(require,module,exports){
 /**
  * Processing.js environment constants
  */
@@ -136,6 +161,10 @@ module.exports = {
     WINDOWS: 1,
     MAXOSX:  2,
     LINUX:   3,
+
+    // Android orientation (not currently used, but here for compatibility)
+    PORTRAIT:  0,
+    LANDSCAPE: 1,
 
     EPSILON: 0.0001,
 
@@ -362,7 +391,7 @@ module.exports = {
     MAX_LIGHTS:         8
 };
 
-},{}],4:[function(require,module,exports){
+},{}],5:[function(require,module,exports){
 // the logger for print() and println()
 module.exports = function PjsConsole(document) {
   var e = { BufferMax: 200 },
@@ -507,7 +536,7 @@ module.exports = function PjsConsole(document) {
   return e;
 };
 
-},{}],5:[function(require,module,exports){
+},{}],6:[function(require,module,exports){
 /**
  * Processing.js default scope
  */
@@ -734,11 +763,17 @@ module.exports = function(options) {
 
   defaultScope.defineProperty(defaultScope, 'screenHeight',
     { get: function() { return window.innerHeight; } });
-
+  
+  defaultScope.defineProperty(defaultScope, 'displayWidth',
+    { get: function() { return window.innerWidth; } });
+  
+  defaultScope.defineProperty(defaultScope, 'displayHeight',
+    { get: function() { return window.innerHeight; } });
+  
   return defaultScope;
 };
 
-},{}],6:[function(require,module,exports){
+},{}],7:[function(require,module,exports){
 /**
  * Finalise the Processing.js object.
  */
@@ -1078,7 +1113,7 @@ module.exports = function finalizeProcessing(Processing, options) {
   return Processing;
 };
 
-},{}],7:[function(require,module,exports){
+},{}],8:[function(require,module,exports){
 /**
  * Returns Java equals() result for two objects. If the first object
  * has the "equals" function, it preforms the call of this function.
@@ -1105,7 +1140,7 @@ module.exports = function virtEquals(obj, other) {
   return obj === other;
 };
 
-},{}],8:[function(require,module,exports){
+},{}],9:[function(require,module,exports){
 /**
  * Returns Java hashCode() result for the object. If the object has the "hashCode" function,
  * it preforms the call of this function. Otherwise it uses/creates the "$id" property,
@@ -1134,7 +1169,7 @@ module.exports = function virtHashCode(obj, undef) {
   return obj.$id;
 };
 
-},{}],9:[function(require,module,exports){
+},{}],10:[function(require,module,exports){
 /**
  * An ArrayList stores a variable number of objects.
  *
@@ -1412,7 +1447,7 @@ module.exports = function(options) {
   return ArrayList;
 };
 
-},{}],10:[function(require,module,exports){
+},{}],11:[function(require,module,exports){
 module.exports = (function(charMap, undef) {
 
   var Char = function(chr) {
@@ -1439,7 +1474,7 @@ module.exports = (function(charMap, undef) {
   return Char;
 }({}));
 
-},{}],11:[function(require,module,exports){
+},{}],12:[function(require,module,exports){
 /**
 * A HashMap stores a collection of objects, each referenced by a key. This is similar to an Array, only
 * instead of accessing elements with a numeric index, a String  is used. (If you are familiar with
@@ -1852,7 +1887,7 @@ module.exports = function(options) {
   return HashMap;
 };
 
-},{}],12:[function(require,module,exports){
+},{}],13:[function(require,module,exports){
 // module export
 module.exports = function(options,undef) {
   var window = options.Browser.window,
@@ -2227,7 +2262,7 @@ module.exports = function(options,undef) {
 
   return PFont;
 };
-},{}],13:[function(require,module,exports){
+},{}],14:[function(require,module,exports){
 module.exports = function(options, undef) {
 
   // FIXME: hack
@@ -2624,7 +2659,7 @@ module.exports = function(options, undef) {
   return PMatrix2D;
 };
 
-},{}],14:[function(require,module,exports){
+},{}],15:[function(require,module,exports){
 module.exports = function(options, undef) {
 
   // FIXME: hack
@@ -3222,7 +3257,7 @@ module.exports = function(options, undef) {
 
   return PMatrix3D;
 };
-},{}],15:[function(require,module,exports){
+},{}],16:[function(require,module,exports){
 module.exports = function(options) {
   var PConstants = options.PConstants,
       PMatrix2D = options.PMatrix2D,
@@ -3884,7 +3919,7 @@ module.exports = function(options) {
 
   return PShape;
 };
-},{}],16:[function(require,module,exports){
+},{}],17:[function(require,module,exports){
 /**
  * SVG stands for Scalable Vector Graphics, a portable graphics format. It is
  * a vector format so it allows for infinite resolution and relatively small
@@ -4976,7 +5011,7 @@ module.exports = function(options) {
   return PShapeSVG;
 };
 
-},{}],17:[function(require,module,exports){
+},{}],18:[function(require,module,exports){
 module.exports = function(options, undef) {
   var PConstants = options.PConstants;
 
@@ -5222,7 +5257,7 @@ module.exports = function(options, undef) {
   return PVector;
 };
 
-},{}],18:[function(require,module,exports){
+},{}],19:[function(require,module,exports){
 /**
  * XMLAttribute is an attribute of a XML element.
  *
@@ -5304,7 +5339,7 @@ module.exports = function() {
   return XMLAttribute;
 };
 
-},{}],19:[function(require,module,exports){
+},{}],20:[function(require,module,exports){
 /**
  * XMLElement is a representation of an XML object. The object is able to parse XML code
  *
@@ -6112,7 +6147,7 @@ module.exports = function(options, undef) {
   return XMLElement;
 };
 
-},{}],20:[function(require,module,exports){
+},{}],21:[function(require,module,exports){
 /**
  * web colors, by name
  */
@@ -6259,7 +6294,7 @@ module.exports = {
     yellowgreen:          "#9acd32"
   };
 
-},{}],21:[function(require,module,exports){
+},{}],22:[function(require,module,exports){
 module.exports = function(virtHashCode, virtEquals, undef) {
 
   return function withProxyFunctions(p, removeFirstArgument) {
@@ -6556,7 +6591,7 @@ module.exports = function(virtHashCode, virtEquals, undef) {
 
 };
 
-},{}],22:[function(require,module,exports){
+},{}],23:[function(require,module,exports){
 /**
  * For many "math" functions, we can delegate
  * to the Math object. For others, we can't.
@@ -7246,7 +7281,7 @@ module.exports = function withMath(p, undef) {
   };
 };
 
-},{}],23:[function(require,module,exports){
+},{}],24:[function(require,module,exports){
 /**
  * Common functions traditionally on "p" that should be class functions
  * that get bound to "p" when an instance is actually built, instead.
@@ -7480,11 +7515,11 @@ module.exports = (function commonFunctions(undef) {
   return CommonFunctions;
 }());
 
-},{}],24:[function(require,module,exports){
+},{}],25:[function(require,module,exports){
 /**
  * Touch and Mouse event handling
  */
-module.exports = function withTouch(p, curElement, attachEventHandler, document, PConstants, undef) {
+module.exports = function withTouch(p, curElement, attachEventHandler, detachEventHandler, eventHandlers, document, PConstants, undef) {
 
   /**
    * Determine the location of the (mouse) pointer.
@@ -7574,6 +7609,7 @@ module.exports = function withTouch(p, curElement, attachEventHandler, document,
   /**
    * Touch event support.
    */
+  
   attachEventHandler(curElement, "touchstart", function (t) {
     // Removes unwanted behaviour of the canvas when touching canvas
     curElement.setAttribute("style","-webkit-user-select: none");
@@ -7663,10 +7699,25 @@ module.exports = function withTouch(p, curElement, attachEventHandler, document,
           p.mouseReleased();
         }
       });
+
+      // Don't lose the first press!!
+      // 
+      // Do this after adding all of the listeners so that they
+      // are added even if mousePressed throws an exception
+
+      updateMousePosition(curElement, t.touches[0]);
+
+      p.__mousePressed = true;
+      p.mouseDragging = false;
+      p.mouseButton = PConstants.LEFT;
+
+      if (typeof p.mousePressed === "function") {
+        p.mousePressed();
+      }
     }
 
     // Refire the touch start event we consumed in this function
-    curElement.dispatchEvent(t);
+//    curElement.dispatchEvent(t);
   });
 
   /**
@@ -7807,7 +7858,7 @@ module.exports = function withTouch(p, curElement, attachEventHandler, document,
 
 };
 
-},{}],25:[function(require,module,exports){
+},{}],26:[function(require,module,exports){
 /**
  * The parser for turning Processing syntax into Pjs JavaScript.
  * This code is not trivial; unless you know what you're doing,
@@ -7840,8 +7891,8 @@ module.exports = function setupParser(Processing, options) {
       "dist", "draw", "ellipse", "ellipseMode", "emissive", "enableContextMenu",
       "endCamera", "endDraw", "endShape", "exit", "exp", "expand", "externals",
       "fill", "filter", "floor", "focused", "frameCount", "frameRate", "frustum",
-      "get", "glyphLook", "glyphTable", "green", "height", "hex", "hint", "hour",
-      "hue", "image", "imageMode", "intersect", "join", "key",
+      "fullScreen", "get", "glyphLook", "glyphTable", "green", "height", "hex",
+      "hint", "hour", "hue", "image", "imageMode", "intersect", "join", "key",
       "keyCode", "keyPressed", "keyReleased", "keyTyped", "lerp", "lerpColor",
       "lightFalloff", "lights", "lightSpecular", "line", "link", "loadBytes",
       "loadFont", "loadGlyphs", "loadImage", "loadPixels", "loadShape", "loadXML",
@@ -7851,7 +7902,7 @@ module.exports = function setupParser(Processing, options) {
       "mouseOut", "mouseOver", "mousePressed", "mouseReleased", "mouseScroll",
       "mouseScrolled", "mouseX", "mouseY", "name", "nf", "nfc", "nfp", "nfs",
       "noCursor", "noFill", "noise", "noiseDetail", "noiseSeed", "noLights",
-      "noLoop", "norm", "normal", "noSmooth", "noStroke", "noTint", "ortho",
+      "noLoop", "norm", "normal", "noSmooth", "noStroke", "noTint", "orientation", "ortho",
       "param", "parseBoolean", "parseByte", "parseChar", "parseFloat",
       "parseInt", "parseXML", "peg", "perspective", "PImage", "pixels",
       "PMatrix2D", "PMatrix3D", "PMatrixStack", "pmouseX", "pmouseY", "point",
@@ -9553,7 +9604,7 @@ module.exports = function setupParser(Processing, options) {
   return Processing;
 };
 
-},{"../Helpers/PjsConsole":4}],26:[function(require,module,exports){
+},{"../Helpers/PjsConsole":5}],27:[function(require,module,exports){
 /**
  * Processing.js object
  */
@@ -9719,7 +9770,7 @@ module.exports = function setupParser(Processing, options) {
     extend.withCommonFunctions(p);
     extend.withMath(p);
     extend.withProxyFunctions(p, removeFirstArgument);
-    extend.withTouch(p, curElement, attachEventHandler, document, PConstants);
+    extend.withTouch(p, curElement, attachEventHandler, detachEventHandler, eventHandlers, document, PConstants);
 
     // custom functions and properties are added here
     if(aFunctions) {
@@ -9790,8 +9841,8 @@ module.exports = function setupParser(Processing, options) {
     p.frameCount      = 0;
 
     // The height/width of the canvas
-    p.width           = 100;
-    p.height          = 100;
+    p.width           = window.innerWidth;
+    p.height          = window.innerHeight;
 
     // "Private" variables used to maintain state
     var curContext,
@@ -14104,7 +14155,9 @@ module.exports = function setupParser(Processing, options) {
      * @see #print
      */
     p.println = function() {
-      Processing.logger.println.apply(Processing.logger, arguments);
+      // Processing.logger.println.apply(Processing.logger, arguments);
+      var args = Array.prototype.slice.call(arguments);
+      console.log("APDE System.out: " + args.join(" ")); // Include prefix to differentiate from errors
     };
     /**
      * The print() function writes to the console area of the Processing environment.
@@ -14114,7 +14167,9 @@ module.exports = function setupParser(Processing, options) {
      * @see #join
      */
     p.print = function() {
-      Processing.logger.print.apply(Processing.logger, arguments);
+      // Processing.logger.print.apply(Processing.logger, arguments);
+      var args = Array.prototype.slice.call(arguments);
+      console.log("APDE System.out: " + args.join(" ")); // Include prefix to differentiate from errors
     };
 
     // Alphanumeric chars arguments automatically converted to numbers when
@@ -14349,11 +14404,68 @@ module.exports = function setupParser(Processing, options) {
       return false;
     };
 
+    p.fullScreen = function(aMode) {
+      if (doStroke) {
+        p.stroke(0);
+      }
+
+      if (doFill) {
+        p.fill(255);
+      }
+
+      // The default 2d context has already been created in the p.init() stage if
+      // a 3d context was not specified. This is so that a 2d context will be
+      // available if size() was not called.
+      var savedProperties = {
+        fillStyle: curContext.fillStyle,
+        strokeStyle: curContext.strokeStyle,
+        lineCap: curContext.lineCap,
+        lineJoin: curContext.lineJoin
+      };
+      // remove the style width and height properties to ensure that the canvas gets set to
+      // aWidth and aHeight coming in
+      if (curElement.style.length > 0 ) {
+        curElement.style.removeProperty("width");
+        curElement.style.removeProperty("height");
+      }
+
+      curElement.width = p.width = window.innerWidth;
+      curElement.height = p.height = window.innerHeight;
+
+      for (var prop in savedProperties) {
+        if (savedProperties.hasOwnProperty(prop)) {
+          curContext[prop] = savedProperties[prop];
+        }
+      }
+
+      // make sure to set the default font the first time round.
+      p.textFont(curTextFont);
+
+      // Set the background to whatever it was called last as if background() was called before size()
+      // If background() hasn't been called before, set background() to a light gray
+      p.background();
+
+      // set 5% for pixels to cache (or 1000)
+      maxPixelsCached = Math.max(1000, window.innerWidth * window.innerHeight * 0.05);
+
+      // Externalize the context
+      p.externals.context = curContext;
+
+      for (var i = 0; i < PConstants.SINCOS_LENGTH; i++) {
+        sinLUT[i] = p.sin(i * (PConstants.PI / 180) * 0.5);
+        cosLUT[i] = p.cos(i * (PConstants.PI / 180) * 0.5);
+      }
+    };
+
+    p.orientation = function() {
+      // No JS implementation... just here for compatibility with Android mode
+    };
+
     /**
     * Defines the dimension of the display window in units of pixels. The size() function must
-    * be the first line in setup(). If size() is not called, the default size of the window is
-    * 100x100 pixels. The system variables width and height are set by the parameters passed to
-    * the size() function.
+    * be the first line in setup(). If size() is not called, the window will fill the screen.
+    * The system variables width and height are set by the parameters passed to the size()
+	* function.
     *
     * @param {int} aWidth     width of the display window in units of pixels
     * @param {int} aHeight    height of the display window in units of pixels
@@ -14387,8 +14499,8 @@ module.exports = function setupParser(Processing, options) {
         curElement.style.removeProperty("height");
       }
 
-      curElement.width = p.width = aWidth || 100;
-      curElement.height = p.height = aHeight || 100;
+      curElement.width = p.width = aWidth || window.innerWidth;
+      curElement.height = p.height = aHeight || window.innerHeight;
 
       for (var prop in savedProperties) {
         if (savedProperties.hasOwnProperty(prop)) {
@@ -14458,8 +14570,8 @@ module.exports = function setupParser(Processing, options) {
           // 3D sketches, browsers will either not render or render the
           // scene incorrectly. To fix this, we need to adjust the
           // width and height attributes of the canvas.
-          curElement.width = p.width = aWidth || 100;
-          curElement.height = p.height = aHeight || 100;
+          curElement.width = p.width = aWidth || window.innerWidth;
+          curElement.height = p.height = aHeight || window.innerHeight;
           curContext = getGLContext(curElement);
           canTex = curContext.createTexture();
           textTex = curContext.createTexture();
@@ -21623,7 +21735,7 @@ module.exports = function setupParser(Processing, options) {
   return Processing;
 };
 
-},{}],27:[function(require,module,exports){
+},{}],28:[function(require,module,exports){
 // Base source files
 var source = {
   virtEquals: require("./Helpers/virtEquals"),
@@ -21757,28 +21869,4 @@ module.exports = function buildProcessingJS(Browser, testHarness) {
   return Processing;
 };
 
-},{"../package.json":1,"./Helpers/ObjectIterator":2,"./Helpers/PConstants":3,"./Helpers/defaultScope":5,"./Helpers/finalizeProcessing":6,"./Helpers/virtEquals":7,"./Helpers/virtHashCode":8,"./Objects/ArrayList":9,"./Objects/Char":10,"./Objects/HashMap":11,"./Objects/PFont":12,"./Objects/PMatrix2D":13,"./Objects/PMatrix3D":14,"./Objects/PShape":15,"./Objects/PShapeSVG":16,"./Objects/PVector":17,"./Objects/XMLAttribute":18,"./Objects/XMLElement":19,"./Objects/webcolors":20,"./P5Functions/JavaProxyFunctions":21,"./P5Functions/Math.js":22,"./P5Functions/commonFunctions":23,"./P5Functions/touchmouse":24,"./Parser/Parser":25,"./Processing":26}],28:[function(require,module,exports){
-// build script for generating processing.js
-
-var Browser = {
-  isDomPresent: true,
-  navigator: navigator,
-  window: window,
-  document: document,
-  ajax: function(url) {
-    var xhr = new XMLHttpRequest();
-    xhr.open("GET", url, false);
-    if (xhr.overrideMimeType) {
-      xhr.overrideMimeType("text/plain");
-    }
-    xhr.setRequestHeader("If-Modified-Since", "Fri, 01 Jan 1960 00:00:00 GMT");
-    xhr.send(null);
-    // failed request?
-    if (xhr.status !== 200 && xhr.status !== 0) { throw ("XMLHttpRequest failed, status code " + xhr.status); }
-    return xhr.responseText;
-  }
-};
-
-window.Processing = require('./src/')(Browser);
-
-},{"./src/":27}]},{},[28]);
+},{"../package.json":2,"./Helpers/ObjectIterator":3,"./Helpers/PConstants":4,"./Helpers/defaultScope":6,"./Helpers/finalizeProcessing":7,"./Helpers/virtEquals":8,"./Helpers/virtHashCode":9,"./Objects/ArrayList":10,"./Objects/Char":11,"./Objects/HashMap":12,"./Objects/PFont":13,"./Objects/PMatrix2D":14,"./Objects/PMatrix3D":15,"./Objects/PShape":16,"./Objects/PShapeSVG":17,"./Objects/PVector":18,"./Objects/XMLAttribute":19,"./Objects/XMLElement":20,"./Objects/webcolors":21,"./P5Functions/JavaProxyFunctions":22,"./P5Functions/Math.js":23,"./P5Functions/commonFunctions":24,"./P5Functions/touchmouse":25,"./Parser/Parser":26,"./Processing":27}]},{},[1]);

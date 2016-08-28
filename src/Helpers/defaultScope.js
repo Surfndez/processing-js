@@ -224,6 +224,12 @@ module.exports = function(options) {
 
   defaultScope.defineProperty(defaultScope, 'screenHeight',
     { get: function() { return window.innerHeight; } });
-
+  
+  defaultScope.defineProperty(defaultScope, 'displayWidth',
+    { get: function() { return window.innerWidth; } });
+  
+  defaultScope.defineProperty(defaultScope, 'displayHeight',
+    { get: function() { return window.innerHeight; } });
+  
   return defaultScope;
 };

@@ -1,7 +1,7 @@
 /**
  * Touch and Mouse event handling
  */
-module.exports = function withTouch(p, curElement, attachEventHandler, document, PConstants, undef) {
+module.exports = function withTouch(p, curElement, attachEventHandler, detachEventHandler, eventHandlers, document, PConstants, undef) {
 
   /**
    * Determine the location of the (mouse) pointer.
@@ -91,6 +91,7 @@ module.exports = function withTouch(p, curElement, attachEventHandler, document,
   /**
    * Touch event support.
    */
+  
   attachEventHandler(curElement, "touchstart", function (t) {
     // Removes unwanted behaviour of the canvas when touching canvas
     curElement.setAttribute("style","-webkit-user-select: none");
@@ -180,10 +181,25 @@ module.exports = function withTouch(p, curElement, attachEventHandler, document,
           p.mouseReleased();
         }
       });
+
+      // Don't lose the first press!!
+      // 
+      // Do this after adding all of the listeners so that they
+      // are added even if mousePressed throws an exception
+
+      updateMousePosition(curElement, t.touches[0]);
+
+      p.__mousePressed = true;
+      p.mouseDragging = false;
+      p.mouseButton = PConstants.LEFT;
+
+      if (typeof p.mousePressed === "function") {
+        p.mousePressed();
+      }
     }
 
     // Refire the touch start event we consumed in this function
-    curElement.dispatchEvent(t);
+//    curElement.dispatchEvent(t);
   });
 
   /**

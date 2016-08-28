@@ -77,6 +77,10 @@ module.exports = {
     MAXOSX:  2,
     LINUX:   3,
 
+    // Android orientation (not currently used, but here for compatibility)
+    PORTRAIT:  0,
+    LANDSCAPE: 1,
+
     EPSILON: 0.0001,
 
     MAX_FLOAT:  3.4028235e+38,

@@ -163,7 +163,7 @@
     extend.withCommonFunctions(p);
     extend.withMath(p);
     extend.withProxyFunctions(p, removeFirstArgument);
-    extend.withTouch(p, curElement, attachEventHandler, document, PConstants);
+    extend.withTouch(p, curElement, attachEventHandler, detachEventHandler, eventHandlers, document, PConstants);
 
     // custom functions and properties are added here
     if(aFunctions) {
@@ -234,8 +234,8 @@
     p.frameCount      = 0;
 
     // The height/width of the canvas
-    p.width           = 100;
-    p.height          = 100;
+    p.width           = window.innerWidth;
+    p.height          = window.innerHeight;
 
     // "Private" variables used to maintain state
     var curContext,
@@ -4548,7 +4548,9 @@
      * @see #print
      */
     p.println = function() {
-      Processing.logger.println.apply(Processing.logger, arguments);
+      // Processing.logger.println.apply(Processing.logger, arguments);
+      var args = Array.prototype.slice.call(arguments);
+      console.log("APDE System.out: " + args.join(" ")); // Include prefix to differentiate from errors
     };
     /**
      * The print() function writes to the console area of the Processing environment.
@@ -4558,7 +4560,9 @@
      * @see #join
      */
     p.print = function() {
-      Processing.logger.print.apply(Processing.logger, arguments);
+      // Processing.logger.print.apply(Processing.logger, arguments);
+      var args = Array.prototype.slice.call(arguments);
+      console.log("APDE System.out: " + args.join(" ")); // Include prefix to differentiate from errors
     };
 
     // Alphanumeric chars arguments automatically converted to numbers when
@@ -4793,11 +4797,68 @@
       return false;
     };
 
+    p.fullScreen = function(aMode) {
+      if (doStroke) {
+        p.stroke(0);
+      }
+
+      if (doFill) {
+        p.fill(255);
+      }
+
+      // The default 2d context has already been created in the p.init() stage if
+      // a 3d context was not specified. This is so that a 2d context will be
+      // available if size() was not called.
+      var savedProperties = {
+        fillStyle: curContext.fillStyle,
+        strokeStyle: curContext.strokeStyle,
+        lineCap: curContext.lineCap,
+        lineJoin: curContext.lineJoin
+      };
+      // remove the style width and height properties to ensure that the canvas gets set to
+      // aWidth and aHeight coming in
+      if (curElement.style.length > 0 ) {
+        curElement.style.removeProperty("width");
+        curElement.style.removeProperty("height");
+      }
+
+      curElement.width = p.width = window.innerWidth;
+      curElement.height = p.height = window.innerHeight;
+
+      for (var prop in savedProperties) {
+        if (savedProperties.hasOwnProperty(prop)) {
+          curContext[prop] = savedProperties[prop];
+        }
+      }
+
+      // make sure to set the default font the first time round.
+      p.textFont(curTextFont);
+
+      // Set the background to whatever it was called last as if background() was called before size()
+      // If background() hasn't been called before, set background() to a light gray
+      p.background();
+
+      // set 5% for pixels to cache (or 1000)
+      maxPixelsCached = Math.max(1000, window.innerWidth * window.innerHeight * 0.05);
+
+      // Externalize the context
+      p.externals.context = curContext;
+
+      for (var i = 0; i < PConstants.SINCOS_LENGTH; i++) {
+        sinLUT[i] = p.sin(i * (PConstants.PI / 180) * 0.5);
+        cosLUT[i] = p.cos(i * (PConstants.PI / 180) * 0.5);
+      }
+    };
+
+    p.orientation = function() {
+      // No JS implementation... just here for compatibility with Android mode
+    };
+
     /**
     * Defines the dimension of the display window in units of pixels. The size() function must
-    * be the first line in setup(). If size() is not called, the default size of the window is
-    * 100x100 pixels. The system variables width and height are set by the parameters passed to
-    * the size() function.
+    * be the first line in setup(). If size() is not called, the window will fill the screen.
+    * The system variables width and height are set by the parameters passed to the size()
+	* function.
     *
     * @param {int} aWidth     width of the display window in units of pixels
     * @param {int} aHeight    height of the display window in units of pixels
@@ -4831,8 +4892,8 @@
         curElement.style.removeProperty("height");
       }
 
-      curElement.width = p.width = aWidth || 100;
-      curElement.height = p.height = aHeight || 100;
+      curElement.width = p.width = aWidth || window.innerWidth;
+      curElement.height = p.height = aHeight || window.innerHeight;
 
       for (var prop in savedProperties) {
         if (savedProperties.hasOwnProperty(prop)) {
@@ -4902,8 +4963,8 @@
           // 3D sketches, browsers will either not render or render the
           // scene incorrectly. To fix this, we need to adjust the
           // width and height attributes of the canvas.
-          curElement.width = p.width = aWidth || 100;
-          curElement.height = p.height = aHeight || 100;
+          curElement.width = p.width = aWidth || window.innerWidth;
+          curElement.height = p.height = aHeight || window.innerHeight;
           curContext = getGLContext(curElement);
           canTex = curContext.createTexture();
           textTex = curContext.createTexture();

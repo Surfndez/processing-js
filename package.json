@@ -26,6 +26,7 @@
   },
   "license": "MIT",
   "dependencies": {
-    "minifier": "^0.7.1"
+    "minifier": "^0.7.1",
+    "minify": "^2.0.11"
   }
 }
