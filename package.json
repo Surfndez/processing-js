@@ -17,7 +17,7 @@
     "grunt-contrib-jshint": "~0.4.3",
     "minifier": "^0.7.1",
     "node-minify": "~0.7.3",
-    "nunjucks": "~0.1.9",
+    "nunjucks": "~3.2.1",
     "open": "0.0.3"
   },
   "scripts": {
